@@ -11,17 +11,19 @@ struct global_sub : public Subscriber<std::string*>
 {
 	void execute(topic_raw_ptr topic, data_t data) override
 	{
-        g_m.lock();
+
         ++counter;
         if (counter % 10 == 0) {
+            g_m.lock();
             std::cout << m_name << " : " << *data << "\n";
+            g_m.unlock();
 		}
 
 		if (counter % 1000 == 0)
 		{
 			emit_signal(1);
 		}
-        g_m.unlock();
+
 	}
 
     void set_name(const std::string & name) { m_name = name; }
