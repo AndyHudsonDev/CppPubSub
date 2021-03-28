@@ -1,2 +1,2 @@
 # CppPubSub
-Generic Publish Subscribe Pattern implemented in C++14
+Generic Publish Subscribe Pattern implemented in C++17
