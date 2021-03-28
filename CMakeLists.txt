@@ -11,5 +11,4 @@ INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
 set(SOURCE_FILES main.cpp pubsub.hpp)
 add_executable(pubsub ${SOURCE_FILES})
-target_link_libraries (pubsub ${CMAKE_THREAD_LIBS_INIT} -fsanitize=thread)
-
+target_link_libraries (pubsub ${CMAKE_THREAD_LIBS_INIT})

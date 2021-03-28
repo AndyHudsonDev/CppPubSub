@@ -14,9 +14,8 @@ struct global_sub : public Subscriber<std::string*>
 
         ++counter;
         if (counter % 10 == 0) {
-            g_m.lock();
+            std::lock_guard l{g_m};
             std::cout << m_name << " : " << *data << "\n";
-            g_m.unlock();
 		}
 
 		if (counter % 1000 == 0)
@@ -47,7 +46,6 @@ struct publisher_t : public Publisher<std::string*>
 	void set_name(std::string n) { name = std::move(n); }
 	virtual void signal(int type_signal) override
 	{
-
 		std::cout << "custom_publisher (name: " << name << ", signal: " << type_signal << ") " << c++ << "\n";
 	}
 
@@ -57,13 +55,20 @@ private:
     std::mutex m_lock;
 };
 
-std::vector<std::string*> v_str;
+constexpr int max_num = 10'000;
+std::vector<std::string *> v_str(max_num, nullptr);
+
 std::string* push_data(const std::string& e)
 {
-    g_m.lock();
-	v_str.push_back(new std::string(e));
-    g_m.unlock();
-	return v_str[v_str.size() - 1];
+    std::lock_guard l{g_m};
+    static int index = 0;
+    if(index >= max_num) {
+        index = 0;
+    }
+
+    delete v_str[index];
+    v_str[index] = new std::string(e);
+    return v_str[index++];
 }
 
 
@@ -88,14 +93,15 @@ int main()
 
 
 
-    std::thread th_meteo([=]{
+    std::thread th_meteo([&]{
 		std::vector<std::string> cities{"Rome", "Florence", "Venice"};
-
-        for (uint32_t i = 0; i < 10000; i++)
+        static size_t i = 0;
+        while(1)
 		{
 			const std::string tcelsius_a = std::to_string(24 + (i % 10));
             //const std::string tcelsius_b = std::to_string(34 + (i % 19));
             meteo_station->produce(push_data(cities[i%3] + ", " + tcelsius_a));
+            ++i;
 			//meteo_b_station->produce(push_data(cities[i%3] + ", " + tcelsius_b));
 		}
 	});
